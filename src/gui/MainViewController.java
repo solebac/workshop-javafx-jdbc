@@ -3,6 +3,7 @@ package gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.function.Consumer;
 
 import application.Main;
 import entities.service.DepartmentService;
@@ -17,7 +18,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
 
-public class MainViewController implements Initializable {
+public class MainViewController<T> implements Initializable {
 
 	@FXML
 	private MenuItem menuItemSeller;
@@ -33,13 +34,15 @@ public class MainViewController implements Initializable {
 
 	@FXML
 	public void onMenuItemDepartmentAction() {
-		//Teste loadView("/gui/DepartmentList.fxml");
-		loadView2("/gui/DepartmentList.fxml");
+		loadView("/gui/DepartmentList.fxml", (DepartmentListController controller) -> {
+			controller.setService(new DepartmentService());
+			controller.updateTableView();});
+		//Teste loadView2("/gui/DepartmentList.fxml");
 	}
 
 	@FXML
 	public void onMenuItemAboutAction() {
-		loadView("/gui/About.fxml");
+		loadView("/gui/About.fxml", x -> {});
 	}
 
 	@Override
@@ -48,7 +51,7 @@ public class MainViewController implements Initializable {
 	}
 
 	@FXML
-	private synchronized void loadView(String path) {
+	private synchronized <T> void loadView(String path, Consumer<T> initializingAction) {
 		try {
 			//Load da nova View
 			FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
@@ -65,6 +68,10 @@ public class MainViewController implements Initializable {
 			//Adicionando novo Form para MainView
 			mainBox.getChildren().add(mainMenu);
 			mainBox.getChildren().addAll(newBox.getChildren());
+			
+			//Executa o Generics
+			T controller = loader.getController();
+			initializingAction.accept(controller);
 		} catch (IOException e) {
 			Alerts.showAlert("IOExceptio", "Error loading view", e.getMessage(), AlertType.ERROR);
 			e.printStackTrace();
@@ -72,6 +79,7 @@ public class MainViewController implements Initializable {
 
 	}
 	
+	//Recurso inativo
 	@FXML
 	private synchronized void loadView2(String path) {
 		try {
