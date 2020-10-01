@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import application.Main;
+import entities.service.DepartmentService;
 import gui.util.Alerts;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -32,7 +33,8 @@ public class MainViewController implements Initializable {
 
 	@FXML
 	public void onMenuItemDepartmentAction() {
-		loadView("/gui/DepartmentList.fxml");
+		//Teste loadView("/gui/DepartmentList.fxml");
+		loadView2("/gui/DepartmentList.fxml");
 	}
 
 	@FXML
@@ -63,6 +65,36 @@ public class MainViewController implements Initializable {
 			//Adicionando novo Form para MainView
 			mainBox.getChildren().add(mainMenu);
 			mainBox.getChildren().addAll(newBox.getChildren());
+		} catch (IOException e) {
+			Alerts.showAlert("IOExceptio", "Error loading view", e.getMessage(), AlertType.ERROR);
+			e.printStackTrace();
+		}
+
+	}
+	
+	@FXML
+	private synchronized void loadView2(String path) {
+		try {
+			//Load da nova View
+			FXMLLoader loader = new FXMLLoader(getClass().getResource(path));
+			VBox newBox = loader.load();
+			//Para ter condiçao de trabalhar com o mainScene Main.java
+			Scene mainScene = Main.getMainScene();
+			//Hierarquia de Nodos
+			//Pegando reference da janela principal
+			VBox mainBox = (VBox) ((ScrollPane) mainScene.getRoot()).getContent();
+			//Preservar o MenuBar. .get(0) pega todo o menu
+			Node mainMenu = mainBox.getChildren().get(0);
+			// Limpar filhos do mainBox
+			mainBox.getChildren().clear();
+			//Adicionando novo Form para MainView
+			mainBox.getChildren().add(mainMenu);
+			mainBox.getChildren().addAll(newBox.getChildren());
+			
+			//TESTE PARA CARREGAR OS DADOS DO TABLEVIEW
+			DepartmentListController controller = loader.getController();
+			controller.setService(new DepartmentService());
+			controller.updateTableView();
 		} catch (IOException e) {
 			Alerts.showAlert("IOExceptio", "Error loading view", e.getMessage(), AlertType.ERROR);
 			e.printStackTrace();
