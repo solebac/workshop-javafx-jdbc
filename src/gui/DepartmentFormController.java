@@ -3,7 +3,9 @@ package gui;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import db.DBException;
 import entities.service.DepartmentService;
@@ -19,6 +21,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import model.entities.Department;
+import model.exceptions.ValidationException;
 
 public class DepartmentFormController implements Initializable {
 
@@ -54,7 +57,11 @@ public class DepartmentFormController implements Initializable {
 			service.saveOrUpdate(department);
 			notifyDataChangelistener();
 			Utils.currentStage(event).close();
-		} catch (DBException e) {
+		}
+		catch (ValidationException e) {
+			setErroMessage(e.getErrors());
+		}
+		catch (DBException e) {
 			Alerts.showAlert("Error saving object", null, e.getMessage(), AlertType.ERROR);
 		}
 		//Test System.out.println("onBtSaveAction");
@@ -68,8 +75,19 @@ public class DepartmentFormController implements Initializable {
 	}
 	private Department getFormData() {
 		Department obj = new Department();
+		ValidationException exception = new ValidationException("Validation error.");
+		//1-Sem validation
 		obj.setId(Utils.tryParseToInt(txtId.getText()));
+		//2-Validation
+		if(txtName.getText() == null || txtName.getText().trim().equals("")) 
+		{
+			exception.addErrors("name", "Field can't be empty.");
+		}
 		obj.setName(txtName.getText());
+		
+		if (exception.getErrors().size() > 0) {
+			throw exception;
+		}
 		return obj;
 	}
 	public void onBtCancelAction(ActionEvent event) {
@@ -100,5 +118,11 @@ public class DepartmentFormController implements Initializable {
 	}
 	public void subscribeDataChangeListener(DataChangeListener listener) {
 		dataChangeListeners.add(listener);
+	}
+	public void setErroMessage(Map<String, String> errors) {
+		Set<String> fields = errors.keySet();
+		if (fields.contains("name")) {
+			labelErrorName.setText(errors.get("name"));
+		}
 	}
 }
