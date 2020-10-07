@@ -23,7 +23,7 @@ import javafx.scene.control.TextField;
 import model.entities.Seller;
 import model.exceptions.ValidationException;
 
-public class SallerFormController implements Initializable {
+public class SellerFormController implements Initializable {
 
 	private Seller seller;
 	private SellerService service;
